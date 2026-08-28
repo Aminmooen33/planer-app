@@ -538,6 +538,13 @@ kbd {
 .account-guest { text-align: center; padding: 24px 20px; }
 .account-guest-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: .6; }
 .account-guest-text { font-size: .9rem; color: var(--text2); margin-bottom: 16px; line-height: 1.5; }
+.sync-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.account-btn.syncing { opacity: .7; pointer-events: none; }
 .foot-btn svg { width: 19px; height: 19px; }
 .lang-btn { font-size: .82rem; font-weight: 700; }
 .ic-volx { display: none; }

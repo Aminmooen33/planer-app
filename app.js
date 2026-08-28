@@ -231,6 +231,7 @@ const STRINGS = {
     'auth.signedOut': 'Signed out', 'auth.error': 'Sign-in failed', 'auth.synced': 'All changes synced',
     'auth.syncError': 'Sync failed', 'auth.signOutConfirm': 'Sign out from Planer?',
     'auth.account': 'Account', 'auth.guestMsg': 'Sign in to sync your tasks across all your devices.',
+    'auth.syncNow': 'Sync Now', 'auth.syncing': 'Syncing...',
     'ph.addTask': 'Add a task', 'pk.laterToday': 'Later today', 'pk.pickDateTime': 'Pick a date & time', 'lbl.every': 'Every',
     'cmd.placeholder': 'Jump to… or type to search', 'cmd.empty': 'No matches',
     'bulk.sel': '{n} selected', 'bulk.complete': 'Complete', 'bulk.delete': 'Delete', 'bulk.cancel': 'Cancel',
@@ -327,6 +328,7 @@ const STRINGS = {
     'auth.signedOut': 'خارج شدید', 'auth.error': 'خطا در ورود', 'auth.synced': 'تمام تغییرات همگام شد',
     'auth.syncError': 'همگام‌سازی ناموفق بود', 'auth.signOutConfirm': 'از پلنر خارج شوید؟',
     'auth.account': 'حساب کاربری', 'auth.guestMsg': 'برای همگام‌سازی کارها در تمام دستگاه‌ها وارد شوید.',
+    'auth.syncNow': 'همگام‌سازی فوری', 'auth.syncing': 'در حال همگام‌سازی...',
     'ph.addTask': 'افزودن کار', 'pk.laterToday': 'امروز عصر', 'pk.pickDateTime': 'انتخاب تاریخ و ساعت', 'lbl.every': 'هر',
     'cmd.placeholder': 'پرش به… یا برای جستجو تایپ کنید', 'cmd.empty': 'موردی پیدا نشد',
     'bulk.sel': '{n} مورد انتخاب شده', 'bulk.complete': 'انجام', 'bulk.delete': 'حذف', 'bulk.cancel': 'انصراف',
@@ -4304,15 +4306,30 @@ function openAccountModal() {
         </div>
         <div class="account-status">
           <span class="dot online"></span>
-          <span data-i18n="auth.synced">${t('auth.synced')}</span>
+          <span>${S.tasks.length} ${t('lbl.tasks')} • ${S.lists.length} ${t('sec.lists')}</span>
         </div>
         <div class="account-actions">
+          <button class="account-btn primary" id="accountSyncNow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2v6h-6M3 12a9 9 0 0115.63-6.36L21 8M3 22v-6h6M21 12a9 9 0 01-15.63 6.36L3 16"/></svg>
+            <span data-i18n="auth.syncNow">${t('auth.syncNow')}</span>
+          </button>
           <button class="account-btn danger" id="accountSignOut">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
             <span data-i18n="auth.signOut">${t('auth.signOut')}</span>
           </button>
         </div>
       </div>`;
+    $('#accountSyncNow').addEventListener('click', async () => {
+      const btn = $('#accountSyncNow');
+      btn.classList.add('syncing');
+      btn.innerHTML = `<span class="sync-spinner"></span> ${t('auth.syncing')}`;
+      await uploadToCloud();
+      btn.classList.remove('syncing');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg> ${t('auth.synced')}`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2v6h-6M3 12a9 9 0 0115.63-6.36L21 8M3 22v-6h6M21 12a9 9 0 01-15.63 6.36L3 16"/></svg> ${t('auth.syncNow')}`;
+      }, 2000);
+    });
     $('#accountSignOut').addEventListener('click', async () => {
       await signOutUser();
       closeAccountModal();
