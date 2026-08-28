@@ -1,6 +1,6 @@
 /* Planer service worker — offline-first app shell.
    CACHE_VERSION changes on every deploy to force cache update. */
-const CACHE_VERSION = 'v2.2';
+const CACHE_VERSION = 'v2.3';
 const CACHE = `planer-${CACHE_VERSION}`;
 
 const SHELL = [
