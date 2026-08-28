@@ -4254,6 +4254,13 @@ function initFirebase() {
       console.log('[Planer] Persistence error:', err.code);
     });
     // Listen for auth state changes
+    // Handle redirect sign-in result (mobile flow)
+    firebaseAuth.getRedirectResult().then(result => {
+      if (result.user) toast(t('auth.welcome', { name: result.user.displayName || '' }));
+    }).catch(err => {
+      console.error('[Planer] Redirect result error:', err);
+      toast(t('auth.error'));
+    });
     firebaseAuth.onAuthStateChanged(user => {
       currentUser = user;
       updateSyncUI();
@@ -4273,10 +4280,20 @@ async function signInWithGoogle() {
   if (!firebaseAuth) { toast(t('auth.error')); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
+    // Mobile browsers block popups — use redirect flow there
+    const isMobile = window.matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      await firebaseAuth.signInWithRedirect(provider);
+      return; // page redirects to Google and back
+    }
     await firebaseAuth.signInWithPopup(provider);
     toast(t('auth.welcome', { name: currentUser?.displayName || '' }));
   } catch (e) {
     console.error('[Planer] Sign-in error:', e);
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
+      // Fallback: try redirect instead
+      try { await firebaseAuth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); return; } catch (e2) { console.error('[Planer] Redirect fallback failed:', e2); }
+    }
     if (e.code !== 'auth/popup-closed-by-user') toast(t('auth.error'));
   }
 }
