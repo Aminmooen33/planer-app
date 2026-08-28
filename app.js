@@ -21,6 +21,12 @@ const markUpdated = id => { const tk = byId(id); if (tk) { tk.updatedAt = Date.n
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
+/** Stamp a task (or a deleted task id) with the current time so sync can resolve conflicts by recency. */
+function markUpdated(id) {
+  const tk = S.tasks.find(x => x.id === id);
+  if (tk) { tk.updatedAt = Date.now(); tk.updatedBy = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.uid : 'local'; }
+}
+
 function autoResizeTextarea(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 200) + 'px';
@@ -4394,8 +4400,8 @@ function startSync() {
     const cloudData = doc.data();
     const cloudTime = cloudData.updatedAt?.toMillis() || 0;
     const localTime = S._lastSync || 0;
-    if (cloudTime > localTime) {
-      // Cloud is newer: merge
+    // Merge when cloud is at least 1s newer; equal timestamps mean our own upload echo
+    if (cloudTime > localTime + 1000) {
       mergeFromCloud(cloudData);
     }
   }, err => {
@@ -4443,8 +4449,9 @@ function uploadToCloud() {
 
 function mergeFromCloud(cloudData) {
   console.log('[Planer] Merging cloud data');
-  // Skip if same device uploaded
-  if (cloudData.updatedBy === currentUser?.uid) return;
+  // Skip if we already have this version (same timestamp = we just uploaded it)
+  const cloudTime = cloudData.updatedAt?.toMillis ? cloudData.updatedAt.toMillis() : (cloudData.updatedAt || 0);
+  if (cloudTime <= (S._lastSync || 0)) { console.log('[Planer] Cloud not newer, skipping'); return; }
   // Merge tasks: compare updatedAt
   if (Array.isArray(cloudData.tasks)) {
     const cloudMap = new Map(cloudData.tasks.map(t => [t.id, t]));
