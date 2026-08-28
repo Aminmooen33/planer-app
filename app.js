@@ -17,6 +17,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g,
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
 const pad2 = n => String(n).padStart(2, '0');
 const clampN = (n, a, b) => Math.min(b, Math.max(a, n));
+const markUpdated = id => { const tk = byId(id); if (tk) { tk.updatedAt = Date.now(); tk.updatedBy = currentUser?.uid || 'local'; } };
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
@@ -628,6 +629,10 @@ function normalizeTask(x) {
       size: Number(a.size ?? 0), data: String(a.data ?? ''),
     })) : [],
     dependsOn: Array.isArray(x.dependsOn) ? x.dependsOn : [],
+    // --- v3 sync fields ---
+    updatedAt: x.updatedAt || Date.now(),
+    updatedBy: x.updatedBy || 'local',
+    deleted: !!x.deleted,
   };
 }
 let saveTimer = null;
@@ -772,6 +777,7 @@ function removeTask(id) {
   const idx = S.tasks.findIndex(x => x.id === id);
   if (idx < 0) return;
   ui.lastRemoved = { task: S.tasks[idx], idx };
+  markUpdated(id);
   S.tasks.splice(idx, 1);
   toast(t('toast.deleted'), { undo: true });
 }
@@ -1460,12 +1466,14 @@ function addTagToTask(name, color) {
   const tk = byId(ui.drawerId); if (!tk) return;
   if (!tk.tags) tk.tags = [];
   tk.tags.push({ id: uid(), name, color });
+  markUpdated(tk.id);
   renderTags();
   persistAndRender();
 }
 function removeTagFromTask(tagId) {
   const tk = byId(ui.drawerId); if (!tk) return;
   tk.tags = (tk.tags || []).filter(t => t.id !== tagId);
+  markUpdated(tk.id);
   renderTags();
   persistAndRender();
 }
@@ -1495,6 +1503,7 @@ function addAttachment(file) {
   const reader = new FileReader();
   reader.onload = () => {
     if (!tk.attachments) tk.attachments = [];
+    markUpdated(tk.id);
     tk.attachments.push({ id: uid(), name: file.name, type: file.type, size: file.size, data: reader.result });
     renderAttachments();
     persistAndRender();
@@ -1505,6 +1514,7 @@ function addAttachment(file) {
 function removeAttachment(attId) {
   const tk = byId(ui.drawerId); if (!tk) return;
   tk.attachments = (tk.attachments || []).filter(a => a.id !== attId);
+  markUpdated(tk.id);
   renderAttachments();
   persistAndRender();
   toast(t('attach.removed'));
@@ -1535,6 +1545,7 @@ function addDependency(targetId) {
   if (!tk.dependsOn) tk.dependsOn = [];
   if (!tk.dependsOn.includes(targetId)) {
     tk.dependsOn.push(targetId);
+    markUpdated(tk.id);
     renderDependencies();
     persistAndRender();
     toast(t('dep.added'));
@@ -1543,6 +1554,7 @@ function addDependency(targetId) {
 function removeDependency(depId) {
   const tk = byId(ui.drawerId); if (!tk) return;
   tk.dependsOn = (tk.dependsOn || []).filter(d => d !== depId);
+  markUpdated(tk.id);
   renderDependencies();
   persistAndRender();
   toast(t('dep.removed'));
@@ -1814,11 +1826,12 @@ function commitPick(isoOrNull) {
   }
   const tk = pk.taskId ? byId(pk.taskId) : null;
   if (pk.field === 'due') {
-    if (tk) { tk.due = isoOrNull; }
+    if (tk) { tk.due = isoOrNull; markUpdated(tk.id); }
   } else if (pk.field === 'reminder') {
     if (tk) {
       tk.reminder = isoOrNull ? `${isoOrNull}T${$('#pkTime').value || '09:00'}` : null;
       tk.notified = false;
+      markUpdated(tk.id);
       requestNotifyPermission();
     }
   }
@@ -2450,6 +2463,7 @@ function onToggleComplete(id, btn) {
       delete tk._busy;
       tk.completed = true;
       tk.completedAt = todayISO();
+      markUpdated(id);
       // stats: completions per day drive the streak, momentum chart and achievements
       S.stats.completionsByDay[tk.completedAt] = (S.stats.completionsByDay[tk.completedAt] || 0) + 1;
       const hr = new Date().getHours();
@@ -2475,6 +2489,7 @@ function onToggleComplete(id, btn) {
       S.stats.completionsByDay[tk.completedAt] = Math.max(0, S.stats.completionsByDay[tk.completedAt] - 1);
     }
     tk.completedAt = null;
+    markUpdated(id);
     saveSoon();
     ui._flash = [id];
     renderAll();
@@ -2966,6 +2981,7 @@ function wireClickDelegation() {
         e.stopPropagation();
         const tk = byId(actionEl.dataset.id); if (!tk) break;
         tk.important = !tk.important;
+        markUpdated(tk.id);
         saveSoon(); renderSidebar(); renderView();
         if (ui.drawerId === tk.id) refreshDrawerValues();
         break;
@@ -2976,6 +2992,7 @@ function wireClickDelegation() {
         const tk = byId(actionEl.dataset.id); if (!tk) break;
         const cur = PRI_SEQ.indexOf(tk.priority || 'none');
         tk.priority = PRI_SEQ[(cur + 1) % PRI_SEQ.length];
+        markUpdated(tk.id);
         saveSoon(); updateTaskRow(tk.id);
         if (ui.drawerId === tk.id) refreshDrawerValues();
         break;
@@ -3429,6 +3446,7 @@ function wireComposer() {
   $('#dTitle').addEventListener('input', debounce(() => {
     const tk = byId(ui.drawerId); if (!tk) return;
     tk.title = $('#dTitle').value.replace(/\n/g, ' ');
+    markUpdated(tk.id);
     saveSoon(); updateTaskRow(tk.id);
     autoResizeTextarea($('#dTitle'));
   }, 200));
@@ -3436,6 +3454,7 @@ function wireComposer() {
   $('#dNotes').addEventListener('input', debounce(() => {
     const tk = byId(ui.drawerId); if (!tk) return;
     tk.notes = $('#dNotes').value;
+    markUpdated(tk.id);
     saveSoon(); updateTaskRow(tk.id);
   }, 250));
   $('#dStar').addEventListener('click', () => {
@@ -4137,6 +4156,7 @@ function applyActions(actions) {
           if (a.myDay !== undefined) tk.myDay = a.myDay;
           if (a.listId !== undefined) tk.listId = a.listId;
           if (a.notes !== undefined) tk.notes = a.notes;
+          markUpdated(tk.id);
           applied.push(tk);
           break;
         }
@@ -4402,13 +4422,14 @@ function uploadToCloud() {
   if (btn) btn.classList.add('syncing');
   const docRef = firebaseDb.collection('users').doc(currentUser.uid).collection('data').doc('state');
   const data = {
-    tasks: S.tasks,
+    tasks: S.tasks.filter(t => !t.deleted),
     lists: S.lists,
     groups: S.groups || [],
     settings: S.settings,
     stats: S.stats,
     seq: S.seq,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser.uid
   };
   docRef.set(data).then(() => {
     S._lastSync = Date.now();
@@ -4422,20 +4443,21 @@ function uploadToCloud() {
 
 function mergeFromCloud(cloudData) {
   console.log('[Planer] Merging cloud data');
-  // Merge tasks: cloud wins for conflicts
+  // Skip if same device uploaded
+  if (cloudData.updatedBy === currentUser?.uid) return;
+  // Merge tasks: compare updatedAt
   if (Array.isArray(cloudData.tasks)) {
-    const localMap = new Map(S.tasks.map(t => [t.id, t]));
-    const cloudIds = new Set(cloudData.tasks.map(t => t.id));
+    const cloudMap = new Map(cloudData.tasks.map(t => [t.id, t]));
     const newTasks = [];
-    // Update existing or add new
-    for (const ct of cloudData.tasks) {
-      const lt = localMap.get(ct.id);
-      if (!lt) { newTasks.push(normalizeTask(ct)); }
-      else { Object.assign(lt, normalizeTask(ct)); }
+    for (const [id, cloudTask] of cloudMap) {
+      const localIdx = S.tasks.findIndex(t => t.id === id);
+      if (localIdx < 0) {
+        newTasks.push(normalizeTask(cloudTask));
+      } else if ((cloudTask.updatedAt || 0) > (S.tasks[localIdx].updatedAt || 0)) {
+        S.tasks[localIdx] = normalizeTask(cloudTask);
+      }
     }
-    // Remove tasks that exist locally but not in cloud (deleted from another device)
-    S.tasks = S.tasks.filter(t => cloudIds.has(t.id));
-    // Add new tasks from cloud
+    S.tasks = S.tasks.filter(t => cloudMap.has(t.id));
     S.tasks.push(...newTasks);
   }
   if (Array.isArray(cloudData.lists)) S.lists = cloudData.lists;
