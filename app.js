@@ -4408,11 +4408,18 @@ function mergeFromCloud(cloudData) {
   // Merge tasks: cloud wins for conflicts
   if (Array.isArray(cloudData.tasks)) {
     const localMap = new Map(S.tasks.map(t => [t.id, t]));
+    const cloudIds = new Set(cloudData.tasks.map(t => t.id));
+    const newTasks = [];
+    // Update existing or add new
     for (const ct of cloudData.tasks) {
       const lt = localMap.get(ct.id);
-      if (!lt) { S.tasks.push(normalizeTask(ct)); }
+      if (!lt) { newTasks.push(normalizeTask(ct)); }
       else { Object.assign(lt, normalizeTask(ct)); }
     }
+    // Remove tasks that exist locally but not in cloud (deleted from another device)
+    S.tasks = S.tasks.filter(t => cloudIds.has(t.id));
+    // Add new tasks from cloud
+    S.tasks.push(...newTasks);
   }
   if (Array.isArray(cloudData.lists)) S.lists = cloudData.lists;
   if (Array.isArray(cloudData.groups)) S.groups = cloudData.groups;
@@ -4423,7 +4430,6 @@ function mergeFromCloud(cloudData) {
   saveNow();
   applySettingsToDOM();
   renderAll();
-  toast(t('auth.synced'));
 }
 
 function debouncedCloudSync() {
