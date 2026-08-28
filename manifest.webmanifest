@@ -1,0 +1,21 @@
+{
+  "name": "Planer — To-Do & Tasks",
+  "short_name": "Planer",
+  "description": "A powerful to-do list with lists, subtasks, reminders, recurrence, dual Gregorian/Jalali calendars, and full English/Persian support.",
+  "id": "planer",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef0fb",
+  "theme_color": "#6552e6",
+  "lang": "en",
+  "dir": "auto",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

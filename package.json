@@ -1,0 +1,8 @@
+{
+  "name": "planer",
+  "productName": "Planer",
+  "version": "1.0.0",
+  "description": "A powerful to-do list with dual Gregorian/Jalali calendars and full English/Persian support.",
+  "main": "electron-main.js",
+  "license": "MIT"
+}

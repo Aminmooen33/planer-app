@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="aurora" data-mode="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#6552e6">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="description" content="Planer — a powerful, beautiful to-do list with dual Gregorian & Jalali calendars, themes, and full English/Persian support.">
+<title>Planer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='9' fill='%236552e6'/%3E%3Cpath d='M9.5 16.5l4.5 4.5 9-10' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<!-- Fonts are self-hosted (see @font-face in styles.css) for offline/PWA use -->
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Decorative animated theme backgrounds (blobs / grids) -->
+<div class="bg-fx" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<!-- Confetti particle layer -->
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<!-- ======================== SVG ICON SPRITE ======================== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M16.8 16.8L21 21"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.3l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.5l5.9-.8z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-sunrise" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h16M7.5 18a4.5 4.5 0 019 0M12 4v3.2M5.6 8.6l1.7 1.7M18.4 8.6l-1.7 1.7"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.5" rx="1.2"/><path d="M9 11h6M9 15h4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10.3 19a2 2 0 003.4 0"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M3 11v-1a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 01-4 4H3"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A1.5 1.5 0 016.5 4h7L18 8.5v10a1.5 1.5 0 01-1.5 1.5h-10A1.5 1.5 0 015 18.5z"/><path d="M13 4v5h5M8.5 13h6M8.5 16.5h4"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 7V5A1.5 1.5 0 0111 3.5h2A1.5 1.5 0 0114.5 5v2M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.5-.9L20 7.6a2 2 0 00-2.8-2.8L5.7 16.3zM14.5 6.5l3 3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-kebab" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 100 18c1.4 0 2-.9 2-1.8 0-1.3-1.2-1.6-1.2-2.7 0-.9.8-1.5 2-1.5H17a4.5 4.5 0 004.5-4.5C21.5 6.2 17.3 3 12 3z"/><circle cx="8" cy="10.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="11" cy="7.3" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.8" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.3 4 5.3 4 8.5s-1.4 6.2-4 8.5c-2.6-2.3-4-5.3-4-8.5s1.4-6.2 4-8.5z"/></symbol>
+  <symbol id="i-kbd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M6.8 10h.01M10.2 10h.01M13.6 10h.01M17 10h.01M7.5 14h9"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.2-7A2 2 0 018.1 4.5h7.8a2 2 0 011.9 1.5L20 13v4.5a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M4 13h5l1.2 2.3h3.6L15 13h5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l2 7 7 2.5-7 2.5-2 7-2-7-7-2.5 7-2.5z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="check-path" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8M3 3v5h5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6M18 9h1.5a2.5 2.5 0 000-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0012 0V2z"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></symbol>
+  <symbol id="i-vol-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+</svg>
+
+<div class="app" id="app">
+
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="sidebar" id="sidebar" data-i18n-aria="sec.lists" aria-label="Lists">
+    <div class="side-top">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6552e6"/><stop offset="1" stop-color="#1cb5f0"/></linearGradient></defs>
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="url(#lg)"/>
+          <path d="M9.5 16.5l4.5 4.5 9-10" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name" data-i18n="app.name">Planer</span>
+      </div>
+      <button class="icon-btn side-close" id="btnSideClose" data-i18n-title="tt.close" data-i18n-aria="tt.close" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </div>
+
+    <!-- Smart lists -->
+    <nav>
+      <ul class="side-nav" id="smartNav"><!-- rendered by JS --></ul>
+    </nav>
+
+    <!-- User lists -->
+    <div class="side-lists">
+      <div class="side-lists-head">
+        <span class="side-label" data-i18n="sec.lists">Lists</span>
+        <button class="icon-btn tiny" id="btnAddGroup" data-i18n-title="group.new" data-i18n-aria="group.new" aria-label="New group"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+        <button class="icon-btn tiny" id="btnAddList" data-i18n-title="btn.newList" data-i18n-aria="btn.newList" aria-label="New list"><svg><use href="#i-plus"/></svg></button>
+      </div>
+      <ul class="side-nav" id="userListUl"><!-- rendered by JS --></ul>
+      <form class="nl-form" id="newListForm" hidden>
+        <div class="nl-sec">
+          <span class="side-mini-lbl" data-i18n="nl.start">Start from a template</span>
+          <div class="tpl-row" id="nlTpl"><!-- template chips injected --></div>
+        </div>
+        <input id="nlName" autocomplete="off" maxlength="40" data-i18n-ph="ph.newList" placeholder="List name">
+        <div class="nl-two">
+          <div class="nl-sec">
+            <span class="side-mini-lbl" data-i18n="set.accent">Color</span>
+            <div class="sw-row" id="nlColors"><!-- swatches injected --></div>
+          </div>
+          <div class="nl-sec">
+            <span class="side-mini-lbl" data-i18n="lbl.icon">Icon</span>
+            <div class="sw-row ic-row" id="nlIcons"><!-- icon choices injected --></div>
+          </div>
+        </div>
+        <div class="nl-actions">
+          <button type="button" class="btn ghost sm" id="nlCancel" data-i18n="btn.cancel">Cancel</button>
+          <button type="submit" class="btn primary sm" data-i18n="btn.add">Add</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar footer: settings / mode / language / shortcuts -->
+    <footer class="side-foot">
+      <div class="foot-row">
+        <button class="foot-btn accent" id="btnSync" data-i18n-title="auth.signIn" data-i18n-aria="auth.signIn" aria-label="Account">
+          <svg class="ic-sync-off"><use href="#i-globe"/></svg>
+          <img class="ic-sync-avatar" id="syncAvatar" hidden alt="">
+        </button>
+        <button class="foot-btn" id="btnSettings" data-i18n-title="tt.settings" data-i18n-aria="tt.settings" aria-label="Settings" aria-haspopup="true"><svg><use href="#i-palette"/></svg></button>
+      </div>
+      <div class="foot-row">
+        <button class="foot-btn" id="btnMode" data-i18n-title="tt.mode" data-i18n-aria="tt.mode" aria-label="Light / dark">
+          <svg class="ic-sun"><use href="#i-sun"/></svg><svg class="ic-moon"><use href="#i-moon"/></svg>
+        </button>
+        <button class="foot-btn lang-btn" id="btnLang" data-i18n-title="tt.lang" data-i18n-aria="tt.lang" aria-label="Language">فا</button>
+        <button class="foot-btn" id="btnSound" data-i18n-title="tt.sound" data-i18n-aria="tt.sound" aria-label="Sound effects">
+          <svg class="ic-vol"><use href="#i-vol"/></svg><svg class="ic-volx"><use href="#i-vol-x"/></svg>
+        </button>
+        <span class="flex-sp"></span>
+        <button class="foot-btn" id="btnTrophy" data-i18n-title="ach.shelf" data-i18n-aria="ach.shelf" aria-label="Achievements"><svg><use href="#i-trophy"/></svg></button>
+        <button class="foot-btn" id="btnShortcuts" data-i18n-title="tt.shortcuts" data-i18n-aria="tt.shortcuts" aria-label="Keyboard shortcuts"><svg><use href="#i-kbd"/></svg></button>
+      </div>
+    </footer>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ============================== MAIN ============================== -->
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn burger" id="btnMenu" data-i18n-title="tt.menu" data-i18n-aria="tt.menu" aria-label="Menu"><svg><use href="#i-menu"/></svg></button>
+      <div class="search-box">
+        <svg class="s-ic"><use href="#i-search"/></svg>
+        <input id="searchInput" autocomplete="off" data-i18n-ph="ph.search" placeholder="Search" data-i18n-aria="ph.search" aria-label="Search tasks">
+        <button class="icon-btn tiny s-clear" id="btnClearSearch" hidden data-i18n-title="tt.clearSearch" data-i18n-aria="tt.clearSearch" aria-label="Clear search"><svg><use href="#i-x"/></svg></button>
+      </div>
+    </header>
+
+    <!-- Modern quick-add composer -->
+    <div class="composer-wrap">
+      <form class="composer" id="composerForm">
+        <div class="c-input-row">
+          <span class="c-check-circle"></span>
+          <input id="composerInput" class="c-input" autocomplete="off" maxlength="200" data-i18n-ph="ph.addTask" placeholder="Add a task">
+          <button type="submit" class="c-add-btn" data-i18n-title="btn.add" data-i18n-aria="btn.add" aria-label="Add task">Add</button>
+        </div>
+        <div class="c-actions" id="composerActions">
+          <button type="button" class="c-action" id="cxDueBtn" data-action="cx-due" title="Set due date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="c-action-label" id="cxDueLbl" data-i18n="cx.when">When</span>
+          </button>
+          <button type="button" class="c-action" id="cxReminderBtn" data-action="cx-reminder" title="Set reminder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="c-action-label" data-i18n="cx.alert">Remind me</span>
+          </button>
+          <button type="button" class="c-action" id="cxRepeatBtn" data-action="cx-repeat" title="Set repeat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 2l4 4-4 4M3 11v-1a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 01-4 4H3"/></svg>
+            <span class="c-action-label" data-i18n="lbl.repeat">Repeat</span>
+          </button>
+          <button type="button" class="c-action" id="cxListBtn" data-action="cx-list" title="Choose list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span class="c-action-label" id="cxListLbl" data-i18n="cx.place">Add to</span>
+          </button>
+        </div>
+      </form>
+      <!-- Quick due date popup -->
+      <div class="c-popup" id="cxDuePopup" hidden>
+        <div class="c-popup-title" data-i18n="cx.when">When</div>
+        <button type="button" class="c-popup-item" data-action="cx-quick" data-q="today">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span data-i18n="pk.today">Today</span><span class="c-popup-hint" id="cxTodayHint"></span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-quick" data-q="tomorrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span data-i18n="pk.tomorrow">Tomorrow</span><span class="c-popup-hint" id="cxTmrHint"></span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-quick" data-q="nextweek">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span data-i18n="pk.nextweek">Next week</span><span class="c-popup-hint" id="cxNwHint"></span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-due">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span data-i18n="pk.pickDate">Pick a date</span>
+        </button>
+      </div>
+      <!-- Quick reminder popup -->
+      <div class="c-popup" id="cxReminderPopup" hidden>
+        <div class="c-popup-title" data-i18n="cx.alert">Remind me</div>
+        <button type="button" class="c-popup-item" data-action="cx-quick-remind" data-q="later">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+          <span data-i18n="pk.laterToday">Later today</span><span class="c-popup-hint">8:00 PM</span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-quick-remind" data-q="tomorrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+          <span data-i18n="pk.tomorrow">Tomorrow</span><span class="c-popup-hint">9:00 AM</span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-quick-remind" data-q="nextweek">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+          <span data-i18n="pk.nextweek">Next week</span><span class="c-popup-hint">Mon, 9:00 AM</span>
+        </button>
+        <button type="button" class="c-popup-item" data-action="cx-due">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span data-i18n="pk.pickDateTime">Pick a date & time</span>
+        </button>
+      </div>
+      <!-- Repeat popup -->
+      <div class="c-popup" id="cxRepeatPopup" hidden>
+        <div class="c-popup-title" data-i18n="lbl.repeat">Repeat</div>
+        <select id="cxRepeat" class="c-popup-select"></select>
+        <div class="cx-every-wrap" id="cxEveryWrap" hidden>
+          <span data-i18n="lbl.every">Every</span>
+          <input type="number" id="cxEvery" min="2" max="365" value="2" class="c-popup-input">
+          <span data-i18n="lbl.days">days</span>
+        </div>
+      </div>
+      <!-- List popup -->
+      <div class="c-popup" id="cxListPopup" hidden>
+        <div class="c-popup-title" data-i18n="cx.place">Add to</div>
+        <div id="cxListOptions"></div>
+      </div>
+    </div>
+
+    <div class="scroller" id="scroller">
+      <div id="view" class="view"><!-- rendered by JS --></div>
+    </div>
+  </main>
+</div>
+
+<!-- ========================= TASK DETAIL DRAWER ========================= -->
+<div class="drawer-root" id="drawerRoot" aria-hidden="true">
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" data-i18n-title="tt.details" data-i18n-aria="tt.details" aria-label="Task details">
+    <header class="d-head">
+      <span class="d-head-sp"></span>
+      <button class="icon-btn" id="dMyday" data-i18n-title="tt.dMyday" data-i18n-aria="tt.dMyday" aria-label="Add to My Day"><svg><use href="#i-sunrise"/></svg></button>
+      <button class="icon-btn star-btn" id="dStar" data-i18n-title="tt.dStar" data-i18n-aria="tt.dStar" aria-label="Mark important"><svg><use href="#i-star"/></svg></button>
+      <button class="icon-btn danger" id="dDelete" data-i18n-title="tt.dDelete" data-i18n-aria="tt.dDelete" aria-label="Delete task"><svg><use href="#i-trash"/></svg></button>
+      <button class="icon-btn" id="dClose" data-i18n-title="tt.close" data-i18n-aria="tt.close" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </header>
+
+    <textarea class="d-title" id="dTitle" rows="1" maxlength="300" data-i18n-ph="ph.title" placeholder="Task title"></textarea>
+
+    <section class="d-steps">
+      <div class="d-sec-label"><svg><use href="#i-check"/></svg><span data-i18n="sec.steps">Steps</span></div>
+      <ul id="stepList" class="steps"></ul>
+      <form id="stepForm" class="step-add">
+        <button type="submit" class="step-add-plus" data-i18n-aria="ph.step" aria-label="Add step"><svg><use href="#i-plus"/></svg></button>
+        <input id="stepInput" autocomplete="off" maxlength="200" data-i18n-ph="ph.step" placeholder="Add step">
+      </form>
+    </section>
+
+    <div class="d-fields">
+      <span class="f-seclabel" data-i18n="dg.schedule">Scheduling</span>
+      <button class="f-row" id="dueRow">
+        <svg class="f-ic"><use href="#i-cal"/></svg>
+        <span class="f-label" data-i18n="lbl.due">Due date</span>
+        <span class="f-val" id="dueVal"></span>
+      </button>
+      <button class="f-row" id="remRow">
+        <svg class="f-ic"><use href="#i-bell"/></svg>
+        <span class="f-label" data-i18n="lbl.reminder">Reminder</span>
+        <span class="f-val" id="remVal"></span>
+      </button>
+      <div class="f-row f-static">
+        <svg class="f-ic"><use href="#i-repeat"/></svg>
+        <label class="f-label" for="repSel" data-i18n="lbl.repeat">Repeat</label>
+        <select id="repSel"></select>
+        <span class="rep-custom" id="repCustomWrap" hidden>
+          <input type="number" id="repEvery" min="2" max="365" value="3" data-i18n-aria="a.interval" aria-label="Interval in days">
+          <span data-i18n="lbl.days">days</span>
+        </span>
+      </div>
+      <span class="f-seclabel" data-i18n="dg.organize">Organization</span>
+      <div class="f-row f-static">
+        <svg class="f-ic"><use href="#i-clip"/></svg>
+        <label class="f-label" for="moveSel" data-i18n="lbl.list">List</label>
+        <select id="moveSel"></select>
+      </div>
+      <button class="f-row" id="dPriorityRow">
+        <svg class="f-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span class="f-label" data-i18n="lbl.priority">Priority</span>
+        <span class="f-val" id="dPriorityVal"></span>
+      </button>
+      <div class="f-row f-static" id="dTagsRow">
+        <svg class="f-ic"><use href="#i-spark"/></svg>
+        <span class="f-label" data-i18n="lbl.tags">Tags</span>
+        <div class="d-tags-wrap" id="dTagsWrap"></div>
+        <button type="button" class="ibtn tiny" id="dAddTag" data-i18n-aria="btn.addTag" aria-label="Add tag"><svg><use href="#i-plus"/></svg></button>
+      </div>
+    </div>
+
+    <section class="d-sec" id="dAttachSection">
+      <div class="d-sec-label"><svg><use href="#i-clip"/></svg><span data-i18n="sec.attachments">Attachments</span><span class="d-sec-count" id="dAttachCount"></span></div>
+      <div class="d-attach-list" id="dAttachList"></div>
+      <label class="d-attach-add" id="dAttachAdd">
+        <svg><use href="#i-plus"/></svg>
+        <span data-i18n="btn.addFile">Add file</span>
+        <input type="file" id="dAttachInput" hidden accept="image/*,.pdf,.txt,.json,.csv">
+      </label>
+    </section>
+
+    <section class="d-sec" id="dDepsSection">
+      <div class="d-sec-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><span data-i18n="sec.dependencies">Dependencies</span></div>
+      <div class="d-deps-list" id="dDepsList"></div>
+      <div class="d-dep-add">
+        <select id="dDepSelect" class="d-dep-sel"><option value="" data-i18n="ph.selectTask">Select a task...</option></select>
+      </div>
+    </section>
+
+    <textarea class="d-notes" id="dNotes" rows="4" data-i18n-ph="ph.notes" placeholder="Add notes"></textarea>
+
+    <footer class="d-foot"><span id="dCreated"></span></footer>
+  </aside>
+</div>
+
+<!-- =========================== DATE PICKER =========================== -->
+<div class="modal" id="pickerRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="pkBackdrop"></div>
+  <div class="modal-card pk-card" role="dialog" aria-modal="true" data-i18n-title="tt.pickDate" data-i18n-aria="tt.pickDate" aria-label="Pick a date">
+    <header class="pk-head">
+      <button class="icon-btn" id="pkPrev" data-i18n-aria="a.prevMonth" aria-label="Previous month"><svg class="flip-x"><use href="#i-chev"/></svg></button>
+      <div class="pk-title" id="pkTitle"></div>
+      <button class="icon-btn" id="pkNext" data-i18n-aria="a.nextMonth" aria-label="Next month"><svg><use href="#i-chev"/></svg></button>
+    </header>
+    <div class="seg pk-seg">
+      <button id="pkCalG" data-cal="g" data-i18n="cal.greg">Gregorian</button>
+      <button id="pkCalJ" data-cal="j" data-i18n="cal.jal">Jalali</button>
+    </div>
+    <div class="pk-week" id="pkWeek"></div>
+    <div class="pk-grid" id="pkGrid"></div>
+    <div class="pk-time" id="pkTimeWrap" hidden>
+      <svg class="f-ic"><use href="#i-clock"/></svg>
+      <input type="time" id="pkTime" value="09:00" data-i18n-aria="lbl.time" aria-label="Time">
+    </div>
+    <footer class="pk-foot">
+      <button class="link" data-q="clear" id="pkClear" data-i18n="pk.clear">None</button>
+      <span class="flex-sp"></span>
+      <button class="link" data-q="yesterday" id="pkYest" data-i18n="pk.yesterday">Yesterday</button>
+      <button class="link" data-q="today" id="pkToday" data-i18n="pk.today">Today</button>
+      <button class="link" data-q="tomorrow" id="pkTomorrow" data-i18n="pk.tomorrow">Tomorrow</button>
+    </footer>
+  </div>
+</div>
+
+<!-- =========================== CONFIRM MODAL =========================== -->
+<div class="modal" id="confirmRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="cfBackdrop"></div>
+  <div class="modal-card cf-card" role="alertdialog" aria-modal="true">
+    <h3 id="cfTitle"></h3>
+    <p id="cfBody"></p>
+    <div class="cf-actions">
+      <button class="btn ghost" id="cfNo" data-i18n="btn.cancel">Cancel</button>
+      <button class="btn danger" id="cfYes" data-i18n="cf.delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== BACKGROUND PICKER ========================== -->
+<div class="modal" id="bgRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="bgBackdrop"></div>
+  <div class="modal-card bg-card" role="dialog" aria-modal="true" data-i18n-aria="bg.title" aria-label="Choose background">
+    <div class="bg-head">
+      <h3 data-i18n="bg.title">Choose Background</h3>
+      <button class="icon-btn" id="bgClose" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </div>
+    <div class="bg-grid" id="bgGrid"></div>
+    <div class="bg-actions">
+      <label class="bg-upload" id="bgUploadLabel">
+        <svg><use href="#i-plus"/></svg>
+        <span data-i18n="bg.upload">Upload Photo</span>
+        <input type="file" id="bgUploadInput" hidden accept="image/*">
+      </label>
+      <button class="btn ghost sm" id="bgClear" data-i18n="bg.clear">Remove Background</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== SUGGESTIONS PANEL ========================== -->
+<div class="suggest-panel" id="suggestPanel" hidden>
+  <div class="suggest-head">
+    <span class="suggest-title" data-i18n="suggest.title">Suggestions</span>
+    <button class="icon-btn tiny" id="suggestClose" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+  </div>
+  <div class="suggest-list" id="suggestList"></div>
+</div>
+
+<!-- ========================== ACCOUNT MODAL ========================== -->
+<div class="modal" id="accountRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="accountBackdrop"></div>
+  <div class="modal-card account-card" role="dialog" aria-modal="true" data-i18n-aria="auth.account" aria-label="Account">
+    <div class="account-head">
+      <h3 data-i18n="auth.account">Account</h3>
+      <button class="icon-btn" id="accountClose" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+    </div>
+    <div id="accountContent">
+      <!-- Filled by JS based on auth state -->
+    </div>
+  </div>
+</div>
+
+<!-- ========================== SHORTCUTS MODAL ========================== -->
+<div class="modal" id="shortcutsRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="scBackdrop"></div>
+  <div class="modal-card sc-card" role="dialog" aria-modal="true">
+    <h3 data-i18n="sc.title">Keyboard shortcuts</h3>
+    <table class="sc-table">
+      <tbody>
+        <tr><td data-i18n="sc.new">New task</td><td><kbd>N</kbd></td></tr>
+        <tr><td data-i18n="sc.search">Search</td><td><kbd>/</kbd></td></tr>
+        <tr><td data-i18n="sc.panel">This panel</td><td><kbd>?</kbd></td></tr>
+        <tr><td data-i18n="sc.esc">Close / cancel</td><td><kbd>Esc</kbd></td></tr>
+        <tr><td data-i18n="sc.palette">Command palette</td><td><kbd>Ctrl</kbd> <kbd>K</kbd></td></tr>
+      </tbody>
+    </table>
+    <p class="sc-nl" data-i18n="sc.nl">Quick add understands “tomorrow 5pm !important #work”</p>
+  </div>
+</div>
+
+<!-- ========================== SETTINGS POPOVER ========================== -->
+<div class="pop settings-pop" id="settingsPop" hidden>
+  <div class="pop-label" data-i18n="set.theme">Theme</div>
+  <div class="theme-grid">
+    <button class="theme-card" data-theme="aurora"><span class="th-sw th-sw-aurora"></span><span data-i18n="theme.aurora">Aurora Glass</span></button>
+    <button class="theme-card" data-theme="paper"><span class="th-sw th-sw-paper"></span><span data-i18n="theme.paper">Minimal Paper</span></button>
+    <button class="theme-card" data-theme="neon"><span class="th-sw th-sw-neon"></span><span data-i18n="theme.neon">Neon Cyber</span></button>
+    <button class="theme-card" data-theme="forest"><span class="th-sw th-sw-forest"></span><span data-i18n="theme.forest">Forest</span></button>
+    <button class="theme-card" data-theme="ocean"><span class="th-sw th-sw-ocean"></span><span data-i18n="theme.ocean">Ocean</span></button>
+    <button class="theme-card" data-theme="sunset"><span class="th-sw th-sw-sunset"></span><span data-i18n="theme.sunset">Sunset</span></button>
+    <button class="theme-card" data-theme="slate"><span class="th-sw th-sw-slate"></span><span data-i18n="theme.slate">Slate</span></button>
+    <button class="theme-card" data-theme="lavender"><span class="th-sw th-sw-lavender"></span><span data-i18n="theme.lavender">Lavender</span></button>
+  </div>
+  <div class="pop-label" data-i18n="set.mode">Appearance</div>
+  <div class="seg" id="modeSeg">
+    <button data-mode="light"><svg class="seg-ic"><use href="#i-sun"/></svg><span data-i18n="mode.light">Light</span></button>
+    <button data-mode="dark"><svg class="seg-ic"><use href="#i-moon"/></svg><span data-i18n="mode.dark">Dark</span></button>
+    <button data-mode="auto"><svg class="seg-ic"><use href="#i-clock"/></svg><span data-i18n="mode.auto">Auto</span></button>
+  </div>
+  <div class="pop-label" data-i18n="set.accent">Accent color</div>
+  <div class="sw-row" id="accentRow"><!-- swatches injected --></div>
+  <div class="pop-label" data-i18n="set.lang">Language</div>
+  <div class="seg" id="langSeg">
+    <button data-lang="en">English</button>
+    <button data-lang="fa">فارسی</button>
+  </div>
+  <div class="pop-label" data-i18n="set.cal">Primary calendar</div>
+  <div class="seg" id="calSeg">
+    <button data-cal="gregorian" data-i18n="cal.greg">Gregorian</button>
+    <button data-cal="jalali" data-i18n="cal.jal">Jalali</button>
+  </div>
+  <div class="pop-label" data-i18n="set.backup">Backup</div>
+  <div class="exp-row">
+    <button type="button" class="btn ghost sm" id="btnInstall" hidden><svg class="bb-ic"><use href="#i-download"/></svg><span data-i18n="set.install">Install app</span></button>
+    <button type="button" class="btn ghost sm" id="btnExport"><svg class="bb-ic"><use href="#i-download"/></svg><span data-i18n="set.export">Export JSON</span></button>
+    <button type="button" class="btn ghost sm" id="btnImport"><svg class="bb-ic"><use href="#i-undo"/></svg><span data-i18n="set.import">Import</span></button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </div>
+  <div class="pop-label" data-i18n="set.aiKey">AI Assistant</div>
+  <div class="exp-col">
+    <div class="exp-row"><label class="exp-lbl" data-i18n="chat.apiKey">API Key</label><input type="password" id="settingsApiKey" class="chat-key-input sm" placeholder="API key" autocomplete="off"></div>
+    <div class="exp-row"><label class="exp-lbl" data-i18n="chat.baseUrl">Base URL</label><input type="text" id="settingsBaseUrl" class="chat-key-input sm" placeholder="Google Gemini default" autocomplete="off" spellcheck="false"></div>
+    <div class="exp-row"><label class="exp-lbl" data-i18n="chat.model">Model</label><input type="text" id="settingsModel" class="chat-key-input sm" placeholder="gemini-2.0-flash" autocomplete="off" spellcheck="false"></div>
+    <div class="exp-row"><label class="exp-lbl" data-i18n="chat.tavilyKey">Tavily API Key</label><input type="password" id="settingsTavilyKey" class="chat-key-input sm" placeholder="tvly-..." autocomplete="off"></div>
+    <div class="exp-row"><button type="button" class="btn ghost sm" id="btnSaveKey"><span data-i18n="chat.save">Save</span></button></div>
+  </div>
+</div>
+
+<!-- ========================== COMMAND PALETTE ========================== -->
+<div class="modal" id="paletteRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="palBackdrop"></div>
+  <div class="modal-card pal-card" role="dialog" aria-modal="true" data-i18n-aria="cmd.placeholder" aria-label="Command palette">
+    <div class="pal-head">
+      <svg class="s-ic"><use href="#i-search"/></svg>
+      <input id="palInput" autocomplete="off" data-i18n-ph="cmd.placeholder" placeholder="Jump to… or type to search" data-i18n-aria="ph.search" aria-label="Search">
+    </div>
+    <ul id="palList" class="pal-list"></ul>
+    <footer class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd></span><span><kbd>Enter</kbd></span><span><kbd>Esc</kbd></span></footer>
+  </div>
+</div>
+
+<!-- ========================= ACHIEVEMENTS SHELF ======================== -->
+<div class="modal" id="trophyRoot" aria-hidden="true">
+  <div class="modal-backdrop" id="trophyBackdrop"></div>
+  <div class="modal-card tr-card" role="dialog" aria-modal="true">
+    <h3 data-i18n="ach.shelf">Achievements</h3>
+    <div class="badge-grid" id="badgeGrid"></div>
+  </div>
+</div>
+
+<!-- ======================= BULK SELECTION BAR ========================== -->
+<div class="bulk-bar" id="bulkBar" hidden>
+  <span class="cnt" id="bulkCount"></span>
+  <button type="button" class="bb-btn" data-action="bulk-complete"><svg><use href="#i-check"/></svg><span data-i18n="bulk.complete">Complete</span></button>
+  <span class="bb-move"><label class="mv-lbl" data-i18n="lbl.list" for="bulkMoveSel"></label><select id="bulkMoveSel"></select></span>
+  <button type="button" class="bb-btn bb-danger" data-action="bulk-delete"><svg><use href="#i-trash"/></svg><span data-i18n="bulk.delete">Delete</span></button>
+  <button type="button" class="bb-btn" data-action="bulk-cancel"><svg><use href="#i-x"/></svg><span data-i18n="bulk.cancel">Cancel</span></button>
+</div>
+
+<!-- Toast notifications (also screen-reader announced) -->
+<ul class="toast-host" id="toastHost" aria-live="polite"></ul>
+
+<!-- ======================== AI CHAT PANEL ========================== -->
+<button type="button" class="chat-fab" id="chatFab" aria-label="AI Assistant" data-i18n-aria="chat.aria">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 017 7v1a7 7 0 01-14 0V9a7 7 0 017-7z"/><path d="M9 21h6"/><path d="M9 18v3M15 18v3"/><circle cx="12" cy="9" r="0.6" fill="currentColor" stroke="none"/><circle cx="9.2" cy="9" r="0.6" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9" r="0.6" fill="currentColor" stroke="none"/></svg>
+</button>
+<div class="chat-panel" id="chatPanel" hidden>
+  <div class="chat-head">
+    <div class="chat-head-info">
+      <svg class="chat-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 017 7v1a7 7 0 01-14 0V9a7 7 0 017-7z"/><path d="M9 21h6"/><path d="M9 18v3M15 18v3"/><circle cx="12" cy="9" r="0.6" fill="currentColor" stroke="none"/><circle cx="9.2" cy="9" r="0.6" fill="currentColor" stroke="none"/><circle cx="14.8" cy="9" r="0.6" fill="currentColor" stroke="none"/></svg>
+      <span data-i18n="chat.title">AI Assistant</span>
+    </div>
+    <button type="button" class="chat-ws-btn on" id="chatWsToggle" data-i18n-title="chat.webSearch" title="Web search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></button>
+    <button type="button" class="chat-close" id="chatClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-msg ai"><div class="chat-bubble" data-i18n="chat.welcome">Hi! I'm your AI assistant. Ask me anything — about Planer, your tasks, or anything else.</div></div>
+  </div>
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything..." data-i18n-placeholder="chat.placeholder" autocomplete="off" maxlength="4000">
+    <button type="submit" class="chat-send" id="chatSend" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+  </form>
+</div>
+
+<!-- API key prompt (shown on first use) -->
+<div class="chat-overlay" id="chatOverlay" hidden>
+  <div class="chat-key-card">
+    <h3 data-i18n="chat.setupTitle">Set up your AI</h3>
+    <p data-i18n="chat.setupBody">Enter your API key to enable the AI assistant. Defaults to Google Gemini — or set a custom base URL for any compatible provider.</p>
+    <label class="chat-label" data-i18n="chat.apiKey">API Key</label>
+    <input type="password" id="chatKeyInput" class="chat-key-input" placeholder="API key..." autocomplete="off">
+    <label class="chat-label" data-i18n="chat.baseUrl">Base URL <span class="chat-hint" data-i18n="chat.baseUrlHint">(leave empty for Google Gemini)</span></label>
+    <input type="text" id="chatBaseUrl" class="chat-key-input" placeholder="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash" autocomplete="off" spellcheck="false">
+    <label class="chat-label" data-i18n="chat.model">Model <span class="chat-hint" data-i18n="chat.modelHint">(optional)</span></label>
+    <input type="text" id="chatModel" class="chat-key-input" placeholder="gemini-2.0-flash" autocomplete="off" spellcheck="false">
+    <label class="chat-label" data-i18n="chat.tavilyKey">Tavily API Key <span class="chat-hint" data-i18n="chat.tavilyHint">(free at tavily.com)</span></label>
+    <input type="password" id="chatTavilyKey" class="chat-key-input" placeholder="tvly-..." autocomplete="off">
+    <div class="chat-key-actions">
+      <button type="button" class="btn ghost" id="chatKeyCancel" data-i18n="chat.cancel">Cancel</button>
+      <button type="button" class="btn primary" id="chatKeySave" data-i18n="chat.save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Action confirmation modal -->
+<div class="action-overlay" id="actionOverlay" hidden>
+  <div class="action-panel">
+    <div class="action-header">
+      <span class="action-header-icon">⚡</span>
+      <div>
+        <h3 data-i18n="chat.actionTitle">Confirm Actions</h3>
+        <p class="action-subtitle" data-i18n="chat.actionSubtitle">Review and approve changes before they're applied</p>
+      </div>
+    </div>
+    <div class="action-cards" id="actionCards"></div>
+    <div class="action-footer">
+      <button class="btn ghost" id="actionRejectAll" data-i18n="chat.actionReject">Reject All</button>
+      <button class="btn primary" id="actionApproveAll" data-i18n="chat.actionApprove">Approve All</button>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="padding:2rem;font-family:sans-serif">Planer needs JavaScript enabled.</p></noscript>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
