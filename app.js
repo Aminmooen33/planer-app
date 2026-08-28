@@ -21,12 +21,6 @@ const markUpdated = id => { const tk = byId(id); if (tk) { tk.updatedAt = Date.n
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-/** Stamp a task (or a deleted task id) with the current time so sync can resolve conflicts by recency. */
-function markUpdated(id) {
-  const tk = S.tasks.find(x => x.id === id);
-  if (tk) { tk.updatedAt = Date.now(); tk.updatedBy = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.uid : 'local'; }
-}
-
 function autoResizeTextarea(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 200) + 'px';
